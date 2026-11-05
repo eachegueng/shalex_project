@@ -55,7 +55,8 @@ typedef enum {
     NODE_LITERAL,
     NODE_BLOCK,
     NODE_COMMENT_LINE,
-    NODE_COMMENT_MULTI
+    NODE_COMMENT_MULTI,
+    NODE_PAREN
 } NodeType;
 
 typedef struct ASTNode {
@@ -207,6 +208,12 @@ void generar_codigo_ulorio(ASTNode *node, FILE *out) {
             fprintf(out, "%s", node->value_str);
             break;
 
+        case NODE_PAREN:
+            fprintf(out, "(");
+            generar_codigo_ulorio(node->left, out);
+            fprintf(out, ")");
+            break;
+
         default:
             break;
     }
@@ -232,6 +239,7 @@ void generar_codigo_ulorio(ASTNode *node, FILE *out) {
 %token <str_val> TOKEN_ID TOKEN_STRING TOKEN_COMMENT_LINE TOKEN_COMMENT_MULTI
 %token <int_val> TOKEN_NUM_INT
 %token <float_val> TOKEN_NUM_FLOAT
+%token <str_val> TOKEN_BOOL_LITERAL
 
 %type <ast_node> programa lista_instrucciones instruccion declaracion asignacion asignacion_sin_q
 %type <ast_node> condicional bloques_alternativos ciclo lectura escritura expresion termino factor condicion
@@ -512,7 +520,11 @@ termino:
     ;
 
 factor:
-    '(' expresion ')' { $$ = $2; }
+    '(' expresion ')' { 
+        ASTNode *node = createNode(NODE_PAREN, "PARENS");
+        node->left = $2;
+        $$ = node; 
+        }
     | TOKEN_ID {
         addSymbol($1, "VAR");
         ASTNode *node = createNode(NODE_VAR, "VARIABLE");
@@ -528,6 +540,12 @@ factor:
     | TOKEN_NUM_FLOAT {
         ASTNode *node = createNode(NODE_LITERAL, "FLOAT");
         snprintf(node->value_str, 49, "%.2f", $1);
+        $$ = node;
+    }
+    TOKEN_BOOL_LITERAL {
+        ASTNode *node = createNode(NODE_LITERAL, "BOOL");
+        strncpy(node->value_str, $1, 49);
+        free($1);
         $$ = node;
     }
     ;

@@ -68,6 +68,11 @@ static char comment_buf[2048];
     return TOKEN_NUM_INT;
 }
 
+"true"|"false" {
+    yylval.str_val = strdup(yytext);
+    return TOKEN_BOOL_LITERAL;
+}
+
 "[?]"[^\n]* {
     yylval.str_val = strdup(yytext + 3);
     return TOKEN_COMMENT_LINE;
