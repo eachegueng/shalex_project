@@ -10,6 +10,7 @@ extern char *yytext;
 extern FILE *yyin;
 
 void yyerror(const char *s);
+int tiene_errores = 0;
 
 /* =========================================================================
  * 1. TABLA DE SÍMBOLOS Y ESTRUCTURA DEL AST
@@ -300,6 +301,10 @@ instruccion:
         free($2);
         $$ = node;
     }
+    | error '?' {
+        yyerrok;
+        $$ = NULL;
+    }
     ;
 
 declaracion:
@@ -524,7 +529,7 @@ factor:
         ASTNode *node = createNode(NODE_PAREN, "PARENS");
         node->left = $2;
         $$ = node; 
-        }
+    }
     | TOKEN_ID {
         addSymbol($1, "VAR");
         ASTNode *node = createNode(NODE_VAR, "VARIABLE");
@@ -542,7 +547,7 @@ factor:
         snprintf(node->value_str, 49, "%.2f", $1);
         $$ = node;
     }
-    TOKEN_BOOL_LITERAL {
+    | TOKEN_BOOL_LITERAL {
         ASTNode *node = createNode(NODE_LITERAL, "BOOL");
         strncpy(node->value_str, $1, 49);
         free($1);
@@ -557,7 +562,8 @@ factor:
  * ========================================================================= */
 
 void yyerror(const char *s) {
-    fprintf(stderr, "\n[ERROR SINTÁCTICO]: %s cerca de '%s' en la línea %d\n", s, yytext, yylineno);
+    tiene_errores = 1;
+    fprintf(stderr, "[ERROR SINTÁCTICO]: %s cerca de '%s' en la línea %d\n", s, yytext, yylineno);
 }
 
 int main(int argc, char **argv) {
@@ -576,23 +582,28 @@ int main(int argc, char **argv) {
 
     printf("Iniciando análisis léxico y sintáctico del archivo '%s'...\n", argv[1]);
 
-    if (yyparse() == 0) {
-        printf("¡Análisis sintáctico completado con éxito!\n");
+    yyparse();
 
-        FILE *out_file = fopen("salida.urio", "w");
-        if (!out_file) {
-            perror("Error al crear el archivo destino .urio");
-            fclose(input_file);
-            return 1;
-        }
-
-        generar_codigo_ulorio(ast_root, out_file);
-        fclose(out_file);
-
-        printf("Archivo 'salida.urio' exportado correctamente.\n");
+    if (tiene_errores) {
+        printf("Advertencia: El archivo contiene errores sintácticos en las líneas indicadas arriba.\n");
+        printf("Generando archivo 'salida.urio' con las instrucciones válidas analizadas...\n");
     } else {
-        printf("Falló el análisis del archivo.\n");
+        printf("¡Análisis sintáctico completado con éxito!\n");
     }
+
+    FILE *out_file = fopen("salida.urio", "w");
+    if (!out_file) {
+        perror("Error al crear el archivo destino .urio");
+        fclose(input_file);
+        return 1;
+    }
+
+    if (ast_root != NULL) {
+        generar_codigo_ulorio(ast_root, out_file);
+    }
+
+    fclose(out_file);
+    printf("Archivo 'salida.urio' exportado correctamente.\n");
 
     fclose(input_file);
     return 0;

@@ -53,6 +53,11 @@ static char comment_buf[2048];
     return TOKEN_STRING;
 }
 
+"true"|"false" {
+    yylval.str_val = strdup(yytext);
+    return TOKEN_BOOL_LITERAL;
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
     yylval.str_val = strdup(yytext);
     return TOKEN_ID;
@@ -66,11 +71,6 @@ static char comment_buf[2048];
 [0-9]+ {
     yylval.int_val = atoi(yytext);
     return TOKEN_NUM_INT;
-}
-
-"true"|"false" {
-    yylval.str_val = strdup(yytext);
-    return TOKEN_BOOL_LITERAL;
 }
 
 "[?]"[^\n]* {
@@ -100,7 +100,7 @@ static char comment_buf[2048];
 [ \t\r\n\xa0]+  ;
 
 . {
-    printf("Error Lexico: Caracter no reconocido '%s' en la linea %d\n", yytext, yylineno);
+    printf("[ERROR LÉXICO]: Caracter no reconocido '%s' en la linea %d\n", yytext, yylineno);
 }
 
 %%

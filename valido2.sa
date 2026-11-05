@@ -1,0 +1,26 @@
+[?] Archivo de prueba básico sin for ni return
+
+player Jugador1 = 'Alex'?
+coin vidas = 5?
+star puntos = 10.3?
+
+box(puntos)?
+
+mushroom (vidas >= 5) [
+    puntos = puntos + (10.5 * 2)?
+] oneUp (vidas > 0) [
+    puntos = puntos + 5?
+] poison [
+    vidas = 0?
+]
+
+flag(puntos)?
+
+warp (vidas < 10) [
+    vidas = vidas + 1?
+]
+
+[??]
+    Este archivo contiene únicamente variables, 
+    lectura, escritura, condicionales y bucle mientras.
+[??]
