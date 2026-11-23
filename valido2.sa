@@ -1,26 +1,31 @@
-[?] Archivo de prueba básico sin for ni return
+[??]
+    Reorganiza el flujo: primero bucle, luego lectura, 
+    operaciones con paréntesis, condicionales y salida.
+[??]
 
-player Jugador1 = 'Alex'?
-coin vidas = 5?
-star puntos = 10.3?
+star bono = 2.5?
+coin monedas = 15?
+player Heroe = "Luigi"?
 
-box(puntos)?
+[?] Bucle mientras primero para reducir monedas y aumentar bono
+warp (monedas > 10) [
+    monedas = monedas - 1?
+    bono = (bono + 1.5) * 2?
+]
 
-mushroom (vidas >= 5) [
-    puntos = puntos + (10.5 * 2)?
-] oneUp (vidas > 0) [
-    puntos = puntos + 5?
+[?] Lectura de datos a mitad del programa
+box(monedas)?
+
+[?] Condicionales con operadores relacionales distintos (==, <)
+mushroom (monedas == 0) [
+    bono = 0.0?
+] oneUp (monedas < 5) [
+    monedas = monedas + (2 * 3)?
 ] poison [
-    vidas = 0?
+    bono = bono / 2?
 ]
 
-flag(puntos)?
-
-warp (vidas < 10) [
-    vidas = vidas + 1?
-]
-
-[??]
-    Este archivo contiene únicamente variables, 
-    lectura, escritura, condicionales y bucle mientras.
-[??]
+[?] Salidas en consola al final
+flag(Heroe)?
+flag(monedas)?
+flag(bono)?
