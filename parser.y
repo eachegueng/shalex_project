@@ -99,106 +99,147 @@ void addChild(ASTNode *parent, ASTNode *child) {
  * 2. TRADUCCIÓN A LENGUAJE URIO (.urio)
  * ========================================================================= */
 
-void generar_codigo_ulorio(ASTNode *node, FILE *out) {
+void print_indent(FILE *out, int indent) {
+    for (int i = 0; i < indent; i++) {
+        fprintf(out, "    "); // 4 espacios por nivel de sangría
+    }
+}
+
+void generar_codigo_ulorio(ASTNode *node, FILE *out, int indent) {
     if (!node || !out) return;
 
     switch (node->type) {
         case NODE_PROGRAM:
         case NODE_BLOCK:
             for (int i = 0; i < node->child_count; i++) {
-                generar_codigo_ulorio(node->children[i], out);
+                generar_codigo_ulorio(node->children[i], out, indent);
             }
             break;
 
         case NODE_COMMENT_LINE:
-            fprintf(out, "//%s\n", node->value_str);
+            print_indent(out, indent);
+            fprintf(out, "//%s\n\n", node->value_str);
             break;
 
         case NODE_COMMENT_MULTI:
+            fprintf(out, "\n");
+            print_indent(out, indent);
             fprintf(out, "/*%s*/\n", node->value_str);
             break;
 
         case NODE_INT:
+            print_indent(out, indent);
             fprintf(out, "entero %s = %s;\n", node->var_name, node->value_str);
             break;
 
         case NODE_FLOAT:
+            print_indent(out, indent);
             fprintf(out, "real %s = %s;\n", node->var_name, node->value_str);
             break;
 
         case NODE_PLAYER:
+            print_indent(out, indent);
             fprintf(out, "crear %s = '%s';\n", node->var_name, node->value_str);
             break;
 
         case NODE_DECLARATION:
+            print_indent(out, indent);
             fprintf(out, "crear %s = %s;\n", node->var_name, node->value_str);
             break;
 
         case NODE_ASSIGNMENT:
+            print_indent(out, indent);
             fprintf(out, "%s = ", node->var_name);
-            generar_codigo_ulorio(node->left, out);
+            generar_codigo_ulorio(node->left, out, 0);
             fprintf(out, ";\n");
             break;
 
         case NODE_IF:
+            print_indent(out, indent);
             fprintf(out, "si (");
-            generar_codigo_ulorio(node->cond, out);
+            generar_codigo_ulorio(node->cond, out, 0);
             fprintf(out, ") [\n");
-            generar_codigo_ulorio(node->body, out);
-            fprintf(out, "]\n");
+            generar_codigo_ulorio(node->body, out, indent + 1);
+            print_indent(out, indent);
+            fprintf(out, "]\n\n");
             break;
 
         case NODE_IF_ELSE:
+            print_indent(out, indent);
             fprintf(out, "si (");
-            generar_codigo_ulorio(node->cond, out);
+            generar_codigo_ulorio(node->cond, out, 0);
             fprintf(out, ") [\n");
-            generar_codigo_ulorio(node->body, out);
+            generar_codigo_ulorio(node->body, out, indent + 1);
+            print_indent(out, indent);
             fprintf(out, "] sino ");
             if (node->else_body && (node->else_body->type == NODE_IF || node->else_body->type == NODE_IF_ELSE)) {
-                generar_codigo_ulorio(node->else_body, out);
+                fprintf(out, "si (");
+                generar_codigo_ulorio(node->else_body->cond, out, 0);
+                fprintf(out, ") [\n");
+                generar_codigo_ulorio(node->else_body->body, out, indent + 1);
+                print_indent(out, indent);
+                fprintf(out, "]");
+                if (node->else_body->else_body) {
+                    fprintf(out, " sino [\n");
+                    generar_codigo_ulorio(node->else_body->else_body, out, indent + 1);
+                    print_indent(out, indent);
+                    fprintf(out, "]\n\n");
+                } else {
+                    fprintf(out, "\n\n");
+                }
             } else {
                 fprintf(out, "[\n");
-                generar_codigo_ulorio(node->else_body, out);
-                fprintf(out, "]\n");
+                generar_codigo_ulorio(node->else_body, out, indent + 1);
+                print_indent(out, indent);
+                fprintf(out, "]\n\n");
             }
             break;
 
         case NODE_WHILE:
+            fprintf(out, "\n");
+            print_indent(out, indent);
             fprintf(out, "mientras (");
-            generar_codigo_ulorio(node->cond, out);
+            generar_codigo_ulorio(node->cond, out, 0);
             fprintf(out, ") [\n");
-            generar_codigo_ulorio(node->body, out);
+            generar_codigo_ulorio(node->body, out, indent + 1);
+            print_indent(out, indent);
             fprintf(out, "]\n");
             break;
 
         case NODE_FOR_LEVEL:
-            generar_codigo_ulorio(node->init, out);
+            generar_codigo_ulorio(node->init, out, indent);
+            print_indent(out, indent);
             fprintf(out, "mientras (");
-            generar_codigo_ulorio(node->cond, out);
+            generar_codigo_ulorio(node->cond, out, 0);
             fprintf(out, ") [\n");
-            generar_codigo_ulorio(node->body, out);
-            generar_codigo_ulorio(node->step, out);
+            generar_codigo_ulorio(node->body, out, indent + 1);
+            generar_codigo_ulorio(node->step, out, indent + 1);
+            print_indent(out, indent);
             fprintf(out, "]\n");
             break;
 
         case NODE_READ:
-            fprintf(out, "leer(%s);\n", node->var_name);
+            fprintf(out, "\n");
+            print_indent(out, indent);
+            fprintf(out, "leer(%s);\n\n", node->var_name);
             break;
 
         case NODE_WRITE:
+            print_indent(out, indent);
             fprintf(out, "mostrar(");
-            generar_codigo_ulorio(node->left, out);
+            generar_codigo_ulorio(node->left, out, 0);
             fprintf(out, ");\n");
             break;
 
         case NODE_PIPE:
+            print_indent(out, indent);
             fprintf(out, "mostrar(%s);\n", node->var_name);
             break;
 
         case NODE_BIN_OP:
-            generar_codigo_ulorio(node->left, out);
+            generar_codigo_ulorio(node->left, out, 0);
             fprintf(out, " %s ", node->op_symbol);
-            generar_codigo_ulorio(node->right, out);
+            generar_codigo_ulorio(node->right, out, 0);
             break;
 
         case NODE_VAR:
@@ -211,7 +252,7 @@ void generar_codigo_ulorio(ASTNode *node, FILE *out) {
 
         case NODE_PAREN:
             fprintf(out, "(");
-            generar_codigo_ulorio(node->left, out);
+            generar_codigo_ulorio(node->left, out, 0);
             fprintf(out, ")");
             break;
 
@@ -599,7 +640,7 @@ int main(int argc, char **argv) {
     }
 
     if (ast_root != NULL) {
-        generar_codigo_ulorio(ast_root, out_file);
+        generar_codigo_ulorio(ast_root, out_file, 0);
     }
 
     fclose(out_file);

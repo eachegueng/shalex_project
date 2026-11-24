@@ -1,32 +1,27 @@
-[?] Archivo de prueba valido corregido
+[?] Archivo de prueba completo con operadores binarios y paréntesis (valido3.sa)
 
-player Jugador1 = 'Alex'?
-coin vidas = 5?
-star puntos = 10.3?
+player Personaje = 'Peach'?
+coin estrellas = 20?
+star tiempo = 45.5?
 
-box(puntos)?
+box(estrellas)?
 
-mushroom (vidas >= 5) [
-    puntos = puntos + (10.5 * 2)?
-] oneUp (vidas > 0) [
-    puntos = puntos + 5?
+mushroom (estrellas >= 20) [
+    tiempo = (tiempo - 5.5) * 2?
+] oneUp (estrellas > 10) [
+    estrellas = (estrellas + 10) / 2?
 ] poison [
-    vidas = 0?
+    estrellas = 100 - (25 * 2)?
 ]
 
-flag(puntos)?
+flag(Personaje)?
+flag(tiempo)?
 
-warp (vidas < 10) [
-    vidas = vidas + 1?
+warp (estrellas < 25) [
+    estrellas = estrellas + (1 + 2)?
 ]
-
-level (coin i = 0? i < 5? i = i + 1) [
-    puntos = puntos + 1?
-]
-
-pipe puntos?
 
 [??]
-    El archivo de prueba ahora cubre todas
-    las palabras reservadas
+    Cubre declaraciones, lectura, condicionales, ciclo mientras,
+    salida y operaciones aritméticas (+, -, *, /) con paréntesis.
 [??]
