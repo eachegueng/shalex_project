@@ -1,0 +1,35 @@
+[??]
+    Archivo de prueba completo
+    Escenario: Batalla final en el Castillo de Bowser.
+    Evalúa tipos de datos, E/S, condicionales, ciclos y precedencia.
+[??]
+
+player Jefe = 'Bowser'?
+coin energia = 50?
+star danio = 12.5?
+
+[?] Solicitar energía inicial al usuario
+box(energia)?
+
+[?] Evaluar estado de la batalla con precedencia matemática
+mushroom (energia >= 40) [
+    danio = (danio * 2) + (10 / 2)?
+    energia = energia - (15 + 5)?
+] oneUp (energia > 15) [
+    danio = (danio + 4.5) * 1.5?
+    energia = energia - 10?
+] poison [
+    energia = 0?
+    danio = (0)?
+]
+
+[?] Mostrar estado actual en consola
+flag(Jefe)?
+flag(danio)?
+
+[?] Bucle de regeneración mientras la energía sea menor a 30
+warp (energia < 30) [
+    energia = energia + (2 * 5)?
+]
+
+flag(energia)?
